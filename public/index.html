@@ -4,96 +4,165 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Infiltrado - Juego de Roles</title>
+    
+    <!-- AQUÍ ESTÁ EL CÓDIGO DEL ÍCONO DE LA PESTAÑA -->
+    <link rel="icon" type="image/png" href="favicon.png">
+    
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        .splash-animacion { animation: fadeSplash 3.5s ease-in-out forwards; }
+        @keyframes fadeSplash {
+            0% { opacity: 0; transform: scale(0.9); }
+            30% { opacity: 1; transform: scale(1); }
+            70% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.05); }
+        }
+        .pantalla {
+            max-height: 100vh; 
+            overflow-y: auto;  
+            overflow-x: hidden; 
+            padding-bottom: 50px; 
+            box-sizing: border-box; 
+            -webkit-overflow-scrolling: touch; 
+            scrollbar-width: none; 
+            -ms-overflow-style: none; 
+        }
+        .pantalla::-webkit-scrollbar { display: none; }
+    </style>
 </head>
 <body>
 
+    <!-- CONTROLES DE AUDIO (Botón Mute + Barra de Volumen) -->
+    <div style="position: fixed; top: 15px; right: 15px; z-index: 1000; display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.7); padding: 5px 12px; border-radius: 25px; border: 1px solid rgba(212,175,55,0.5);">
+        <input type="range" id="control-volumen" min="0" max="1" step="0.05" value="0.2" style="width: 70px; accent-color: #d4af37; cursor: pointer;">
+        <button id="btn-mute" style="background: none; border: none; cursor: pointer; color: #d4af37; font-size: 1.2rem; padding: 0;">🔊</button>
+    </div>
+
     <div id="game-container">
         
-        <!-- Pantalla 1: Pantalla de Inicio -->
-        <div id="pantalla-inicio" class="pantalla activa">
-            <h1 class="titulo-juego">INFILTRADO</h1>
-            <p class="subtitulo">Descubre la verdad. Oculta tus pasos.</p>
+        <!-- PANTALLA 0: SPLASH SCREEN -->
+        <div id="pantalla-splash" class="pantalla activa" style="display: flex; justify-content: center; align-items: center; min-height: 80vh;">
+            <img src="logo-splash.png" alt="LuxArt Games" class="splash-animacion" style="max-width: 250px; opacity: 0;">
+        </div>
+
+        <!-- PANTALLA 1: INICIO -->
+        <div id="pantalla-inicio" class="pantalla oculta" style="display: none;">
             
-            <div class="panel-cristal">
-                <input type="text" id="nombre-jugador" placeholder="Ingresa tu nombre" maxlength="12">
-                <button id="btn-crear-sala" class="btn-dorado">Crear Nueva Sala</button>
-                
-                <div class="separador">
-                    <span>O</span>
+            <div style="text-align: center; margin-top: 10px; margin-bottom: 25px;">
+                <img src="logo-inicio.png" alt="Logo Infiltrado" style="width: 90%; max-width: 350px; border-radius: 10px; display: inline-block;">
+            </div>
+            
+            <details class="panel-cristal" style="margin-bottom: 20px; padding: 12px; background: rgba(212,175,55,0.05); border: 1px solid rgba(212,175,55,0.2);">
+                <summary style="color: #d4af37; font-size: 0.85rem; cursor: pointer; font-weight: bold; text-align: center; list-style: none;">
+                    📖 CÓMO JUGAR (Toca para ver las reglas)
+                </summary>
+                <div style="font-size: 0.75rem; color: #ccc; margin-top: 15px; line-height: 1.5; text-align: left; padding: 0 5px;">
+                    <p style="margin-bottom: 8px;">• <b>Los Agentes:</b> Reciben una palabra secreta. Su misión es dar una pista de una sola palabra que demuestre que saben el secreto, pero sin ser tan obvios como para regalárselo al enemigo.</p>
+                    <p style="margin-bottom: 8px;">• <b>El Infiltrado:</b> No recibe la palabra secreta. Debe observar a los demás y soltar una pista falsa para camuflarse entre los Agentes.</p>
+                    <p>• <b>El Veredicto:</b> Al terminar el tiempo, se abre el debate. Todos votan por quien creen que es el Infiltrado. ¡Cuidado en quién confías!</p>
                 </div>
+            </details>
+
+            <div class="panel-cristal">
+                <input type="text" id="nombre-jugador" placeholder="Tu nombre de Agente" maxlength="12">
+                <input type="text" id="nombre-sala-input" placeholder="Nombre de la Sala (Opcional)" maxlength="20" style="margin-top: 10px;">
+                <button id="btn-crear-sala" class="btn-dorado" style="margin-top: 10px;">Crear Nueva Sala</button>
                 
-                <input type="text" id="codigo-sala" placeholder="Código de la sala" maxlength="4">
-                <button id="btn-unirse-sala" class="btn-secundario">Unirse</button>
+                <div class="separador"><span>O</span></div>
+                
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <input type="text" id="codigo-sala" placeholder="Código de la sala" maxlength="4" style="text-align: center;">
+                    <button id="btn-unirse-sala" class="btn-secundario" style="margin: 0; padding: 10px 15px; width: 100%;">Entrar</button>
+                </div>
+
+                <div id="seccion-publicas" style="margin-top: 25px; border-top: 1px solid rgba(212,175,55,0.3); padding-top: 15px;">
+                    <h3 style="color: #d4af37; font-size: 0.9rem; margin-bottom: 10px; display: flex; justify-content: space-between;">
+                        Salas Activas 
+                        <span id="btn-actualizar-salas" style="cursor: pointer; font-size: 0.7rem; border: 1px solid; padding: 2px 5px; border-radius: 4px;">🔄 Actualizar</span>
+                    </h3>
+                    <div id="lista-salas-publicas" style="max-height: 200px; overflow-y: auto; text-align: left;">
+                        <p style="color: #666; font-style: italic; font-size: 0.8rem; text-align: center;">Buscando misiones abiertas...</p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Pantalla 2: Sala de Espera (Lobby) -->
+        <!-- PANTALLA 2: SALA DE ESPERA -->
         <div id="pantalla-sala" class="pantalla oculta" style="display: none;">
-            <h2 class="titulo-sala">SALA: <span id="display-codigo-sala">----</span></h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h2 class="titulo-sala" style="margin: 0; line-height: 1.2;">
+                    <span id="display-nombre-sala" style="color: #fff; font-size: 1.2rem; display: block;"></span>
+                    <span style="font-size: 0.8rem; color: #d4af37;">CÓDIGO: <span id="display-codigo-sala">----</span></span>
+                </h2>
+                <button id="btn-abandonar-sala" style="background: none; border: 1px solid #ff4d4d; color: #ff4d4d; padding: 5px 10px; border-radius: 5px; font-size: 0.7rem; cursor: pointer;">SALIR</button>
+            </div>
             
             <p id="mensaje-espera" style="text-align: center; color: #888; margin-bottom: 20px;">Esperando a que el Host inicie la partida...</p>
 
-            <!-- Panel de Configuración (SOLO HOST) -->
-<div id="panel-configuracion" class="panel-cristal" style="display: none; margin-bottom: 25px; padding: 0;">
-    <details style="width: 100%;">
-        <summary style="padding: 15px; color: #d4af37; font-weight: bold; cursor: pointer; list-style: none; text-align: center;">
-            ⚙️ CONFIGURAR PARTIDA (Tocar para abrir)
-        </summary>
-        
-        <div style="padding: 0 20px 20px 20px;">
-            <div class="grupo-config">
-                <label>Número de Rondas:</label>
-                <select id="config-rondas">
-                    <option value="1">1 Ronda</option>
-                    <option value="3">3 Rondas</option>
-                    <option value="5" selected>5 Rondas</option>
-                    <option value="10">10 Rondas</option>
-                </select>
+            <div id="panel-configuracion" class="panel-cristal" style="display: none; margin-bottom: 25px; padding: 0;">
+                <details style="width: 100%;">
+                    <summary style="padding: 15px; color: #d4af37; font-weight: bold; cursor: pointer; list-style: none; text-align: center;">
+                        ⚙️ CONFIGURAR PARTIDA
+                    </summary>
+                    <div style="padding: 0 20px 20px 20px;">
+                        <div class="grupo-config">
+                            <label>Dificultad de Palabras:</label>
+                            <select id="config-dificultad">
+                                <option value="facil">Fácil</option>
+                                <option value="normal" selected>Normal</option>
+                                <option value="dificil">Difícil</option>
+                            </select>
+                        </div>
+                        <div class="grupo-config">
+                            <label>Número de Rondas:</label>
+                            <select id="config-rondas">
+                                <option value="1">1 Ronda</option>
+                                <option value="3">3 Rondas</option>
+                                <option value="5" selected>5 Rondas</option>
+                                <option value="10">10 Rondas</option>
+                            </select>
+                        </div>
+                        <div class="grupo-config">
+                            <label>Impostores:</label>
+                            <select id="config-impostores">
+                                <option value="1" selected>1 Infiltrado</option>
+                                <option value="2">2 Infiltrados</option>
+                            </select>
+                        </div>
+                        <div class="grupo-config">
+                            <label>Tiempo por Turno:</label>
+                            <select id="config-tiempo">
+                                <option value="30">30 seg</option>
+                                <option value="60" selected>60 seg</option>
+                                <option value="0">Sin Límite</option>
+                            </select>
+                        </div>
+                        <div class="grupo-checkbox" style="margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                            <input type="checkbox" id="config-publica" checked>
+                            <label for="config-publica"><b>Sala Pública</b></label>
+                        </div>
+                        <div class="grupo-checkbox">
+                            <input type="checkbox" id="config-bonus" checked>
+                            <label for="config-bonus">Bonus de Velocidad</label>
+                            <div style="margin-top: 10px; padding-left: 15px; font-size: 0.9rem;">
+                                <label>Segundos límite:</label>
+                                <input type="number" id="config-tiempo-bonus" value="10" min="1" max="30" style="width: 60px;">
+                                <label>Puntos:</label>
+                                <input type="number" id="config-puntos-bonus" value="1" min="1" max="3" style="width: 60px;">
+                            </div>
+                        </div>
+                        <div class="grupo-checkbox" style="margin-top: 15px;">
+                            <input type="checkbox" id="config-camuflaje" checked>
+                            <label for="config-camuflaje">Puntos de Camuflaje</label>
+                            <div style="margin-top: 10px; padding-left: 15px; font-size: 0.9rem;">
+                                <label>Puntos si no lo ven:</label>
+                                <input type="number" id="config-puntos-camuflaje" value="2" min="1" max="3" style="width: 60px;">
+                            </div>
+                        </div>
+                    </div>
+                </details>
             </div>
-
-            <div class="grupo-config">
-                <label>Impostores:</label>
-                <select id="config-impostores">
-                    <option value="1" selected>1 Impostor</option>
-                    <option value="2">2 Impostores</option>
-                </select>
-            </div>
-
-            <div class="grupo-config">
-                <label>Tiempo por Turno:</label>
-                <select id="config-tiempo">
-                    <option value="30">30 seg</option>
-                    <option value="60" selected>60 seg</option>
-                    <option value="0">Sin Límite</option>
-                </select>
-            </div>
-
-            <!-- BONUS CONFIG -->
-            <div class="grupo-checkbox" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
-                <input type="checkbox" id="config-bonus" checked>
-                <label for="config-bonus">Bonus de Velocidad</label>
-                <div style="margin-top: 10px; padding-left: 15px; font-size: 0.9rem;">
-                    <label>Segundos límite:</label>
-                    <input type="number" id="config-tiempo-bonus" value="10" min="1" max="30" style="width: 80px;">
-                    <label>Puntos:</label>
-                    <input type="number" id="config-puntos-bonus" value="1" min="1" max="3" style="width: 80px;">
-                </div>
-            </div>
-
-            <!-- CAMUFLAJE CONFIG -->
-            <div class="grupo-checkbox" style="margin-top: 15px;">
-                <input type="checkbox" id="config-camuflaje" checked>
-                <label for="config-camuflaje">Puntos de Camuflaje</label>
-                <div style="margin-top: 10px; padding-left: 15px; font-size: 0.9rem;">
-                    <label>Puntos Infiltrado:</label>
-                    <input type="number" id="config-puntos-camuflaje" value="2" min="1" max="3" style="width: 80px;">
-                </div>
-            </div>
-        </div>
-    </details>
-</div>
 
             <div class="lista-jugadores">
                 <h3>Agentes Conectados: <span id="contador-jugadores">0</span>/10</h3>
@@ -103,7 +172,7 @@
             <button id="btn-iniciar-partida" class="btn-dorado" style="display: none; margin-top: 20px;">Iniciar Partida</button>
         </div>
 
-        <!-- Pantalla 3: Tablero de Juego -->
+        <!-- PANTALLA 3: JUEGO -->
         <div id="pantalla-juego" class="pantalla oculta" style="display: none;">
             <div class="header-juego" style="text-align: center; margin-bottom: 20px;">
                 <span id="tiempo-restante" style="color: #d4af37; font-size: 2rem; font-family: 'Cinzel', serif;">00:00</span>
@@ -125,7 +194,7 @@
             </div>
         </div>
 
-        <!-- Pantalla 4: Votación -->
+        <!-- PANTALLA 4: VOTACION -->
         <div id="pantalla-votacion" class="pantalla oculta" style="display: none;">
             <div class="header-juego" style="text-align: center; margin-bottom: 20px;">
                 <span id="tiempo-votacion" style="color: #d4af37; font-size: 2rem; font-family: 'Cinzel', serif;">00:00</span>
@@ -135,7 +204,7 @@
             <button id="btn-confirmar-voto" class="btn-dorado" style="margin-top: 15px;" disabled>Confirmar Voto</button>
         </div>
 
-        <!-- Pantalla 5: Resultados y Fin del Juego -->
+        <!-- PANTALLA 5: RESULTADOS -->
         <div id="pantalla-resultados" class="pantalla oculta" style="display: none;">
             <h2 class="titulo-sala" style="text-align: center; margin-bottom: 5px;">RESULTADOS</h2>
             <p style="text-align: center; color: #aaa; margin-bottom: 20px;">El Infiltrado era...</p>
@@ -146,25 +215,18 @@
 
             <div class="lista-jugadores">
                 <h3 style="color: #d4af37; border-bottom: 1px solid rgba(212,175,55,0.3); padding-bottom: 5px;">Marcador Global</h3>
-                <ul id="lista-resultados" style="padding: 0; margin-top: 15px;">
-                    <!-- Se llena dinámicamente con el Ganador y la lista ordenada -->
-                </ul>
+                <ul id="lista-resultados" style="padding: 0; margin-top: 15px;"></ul>
             </div>
 
-            <!-- CONTROLES FINALES PARA EL HOST -->
             <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 25px;">
                 <button id="btn-siguiente-ronda" class="btn-dorado" style="display: none;">Siguiente Ronda</button>
-                
-                <!-- BOTÓN REINICIO TOTAL (Solo visible para Host) -->
                 <button id="btn-reinicio-total" class="btn-dorado" style="background: #721c24; border: 1px solid #ff4d4d; display: none;">⚠️ REINICIAR TODO</button>
-                
                 <p id="mensaje-espera-resultados" style="text-align: center; color: #888; font-style: italic;">Esperando al Host...</p>
             </div>
         </div>
 
     </div>
 
-    <!-- Scripts -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="app.js"></script>
 </body>
